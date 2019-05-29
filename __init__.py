@@ -10,7 +10,8 @@ class AWXSkill(Skill):
             login=self.config["sites"][environment]["username"],
             password=self.config["sites"][environment]["username"],
         )
-        api_url = self.config["sites"][environment]["url"]
+        # api_url = self.config["sites"][environment]["url"] + "/api/v2/inventories/"
+        api_url = f"{self.config['sites'][environment]['url']}/api/v2/inventories/"
 
         async with aiohttp.ClientSession(auth=auth) as session:
             async with session.get(api_url) as resp:
