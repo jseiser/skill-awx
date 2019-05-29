@@ -24,8 +24,5 @@ class AWXSkill(Skill):
     async def list_inventory(self, message):
         environment = message.regex.group("environment")
         inventories = await self._get_inventories(environment)
-        data = {
-            "text": "I am a test message http://slack.com",
-            "attachments": [{"text": "And here’s an attachment!"}],
-        }
-        await message.respond(data)
+
+        await message.respond(f"{inventories}")
