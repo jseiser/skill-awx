@@ -6,12 +6,15 @@ import aiohttp
 
 class AWXSkill(Skill):
     async def _get_inventories(self, environment):
+        print(self.config["sites"][environment]["username"])
+        print(self.config["sites"][environment]["username"])
         auth = aiohttp.BasicAuth(
             login=self.config["sites"][environment]["username"],
             password=self.config["sites"][environment]["username"],
         )
         # api_url = self.config["sites"][environment]["url"] + "/api/v2/inventories/"
         api_url = f"{self.config['sites'][environment]['url']}/api/v2/inventories/"
+        print(api_url)
 
         async with aiohttp.ClientSession(auth=auth) as session:
             async with session.get(api_url) as resp:
