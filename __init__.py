@@ -14,7 +14,7 @@ class AWXSkill(Skill):
 
         async with aiohttp.ClientSession(auth=auth) as session:
             response = await session.get(api_url)
-            print response.json()
+            print(response.json())
         return response.json()
 
     @match_regex(r"^list inventory (?P<environment>\w+-\w+|\w+)")
