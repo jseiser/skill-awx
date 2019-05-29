@@ -43,6 +43,6 @@ class AWXSkill(Skill):
     async def update_inventory(self, message):
         environment = message.regex.group("environment")
         inventory = message.regex.group("inventory")
-        update = await self._get_inventories(environment, inventory)
+        update = await self._update_inventory(environment, inventory)
 
         await message.respond(f"{update}")
