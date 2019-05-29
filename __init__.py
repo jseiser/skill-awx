@@ -14,11 +14,15 @@ class AWXSkill(Skill):
 
         async with aiohttp.ClientSession(auth=auth) as session:
             async with session.get(api_url) as resp:
+                inventories = {}
                 data = await resp.json()
                 for i in data["results"]:
-                    print(i["id"])
-                    print(i["name"])
-                return "testing"
+                    inventories.update({i["id"]: i["name"]})
+                slack_message = {
+                    "text": "Inventories",
+                    "attachments": [{"text": inventories}],
+                }
+                return slack_message
 
     @match_regex(r"^list inventory (?P<environment>\w+-\w+|\w+)")
     async def list_inventory(self, message):
