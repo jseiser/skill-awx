@@ -20,7 +20,8 @@ class AWXSkill(Skill):
             async with session.get(api_url) as resp:
                 data = await resp.json()
                 for i in data["results"]:
-                    print(i)
+                    print(i["id"])
+                    print(i["name"])
                 return "testing"
 
     @match_regex(r"^list inventory (?P<environment>\w+-\w+|\w+)")
