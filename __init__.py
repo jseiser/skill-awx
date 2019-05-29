@@ -18,11 +18,7 @@ class AWXSkill(Skill):
                 data = await resp.json()
                 for i in data["results"]:
                     inventories.update({i["id"]: i["name"]})
-                slack_message = {
-                    "text": "Inventories",
-                    "attachments": [{"text": inventories}],
-                }
-                return slack_message
+                return inventories
 
     @match_regex(r"^list inventory (?P<environment>\w+-\w+|\w+)")
     async def list_inventory(self, message):
