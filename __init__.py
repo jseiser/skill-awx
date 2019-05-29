@@ -13,13 +13,14 @@ class AWXSkill(Skill):
         api_url = self.config["sites"][environment]["url"]
 
         async with aiohttp.ClientSession(auth=auth) as session:
-            response = await session.get(api_url)
-            print(response.json())
-        return response.json()
+            async with session.get(api_url) as resp:
+                response = await resp.json()
+                return response
 
     @match_regex(r"^list inventory (?P<environment>\w+-\w+|\w+)")
     async def list_inventory(self, message):
         environment = message.regex.group("environment")
         inventories = await self._get_inventories(environment)
+        print(inventories)
 
         await message.respond(f"{inventories}")
