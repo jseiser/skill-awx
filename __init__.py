@@ -38,7 +38,47 @@ class AWXSkill(Skill):
                 result = data[0]
                 print(resp.status)
                 print(result["status"])
-                return_text = f"```Status: {resp.status} State: {result['status']}```"
+                return_text = f"{return_text}```Status: {resp.status} State: {result['status']}```"
+                return return_text
+
+    async def _get_running_jobs(self, environment):
+        auth = aiohttp.BasicAuth(
+            login=self.config["sites"][environment]["username"],
+            password=self.config["sites"][environment]["password"],
+        )
+        timeout = aiohttp.ClientTimeout(total=60)
+        api_url = (
+            f"{self.config['sites'][environment]['url']}/api/v2/jobs/?status=running"
+        )
+
+        async with aiohttp.ClientSession(auth=auth, timeout=timeout) as session:
+            async with session.get(api_url) as resp:
+                data = await resp.json()
+                if data["count"] > 0:
+                    return_text = "*Running Jobs*\n"
+                    for i in data["results"]:
+                        return_text = f"{return_text}```ID: {i['id']} Name: {i['name']} Playbook: i['playbook']```\n"
+                else:
+                    return_text = "```No Running Jobs```"
+                return return_text
+
+    async def _get_failed_jobs(self, environment):
+        auth = aiohttp.BasicAuth(
+            login=self.config["sites"][environment]["username"],
+            password=self.config["sites"][environment]["password"],
+        )
+        timeout = aiohttp.ClientTimeout(total=60)
+        api_url = f"{self.config['sites'][environment]['url']}/api/v2/jobs/?status=failed&order_by=-started&page_size=5"
+
+        async with aiohttp.ClientSession(auth=auth, timeout=timeout) as session:
+            async with session.get(api_url) as resp:
+                data = await resp.json()
+                if data["count"] > 0:
+                    return_text = "*Last 5 Failed Jobs*\n"
+                    for i in data["results"]:
+                        return_text = f"{return_text}```ID: {i['id']} Name: {i['name']} Playbook: i['playbook']```\n"
+                else:
+                    return_text = "```No Failed Jobs```"
                 return return_text
 
     @match_regex(r"^list inventory (?P<environment>\w+-\w+|\w+)")
@@ -55,3 +95,17 @@ class AWXSkill(Skill):
         update = await self._update_inventory(environment, inventory)
 
         await message.respond(f"{update}")
+
+    @match_regex(r"^list running jobs (?P<environment>\w+-\w+|\w+)")
+    async def list_running_jobs(self, message):
+        environment = message.regex.group("environment")
+        inventories = await self._get_running_jobs(environment)
+
+        await message.respond(f"{inventories}")
+
+    @match_regex(r"^list failed jobs (?P<environment>\w+-\w+|\w+)")
+    async def list_failed_jobs(self, message):
+        environment = message.regex.group("environment")
+        inventories = await self._get_failed_jobs(environment)
+
+        await message.respond(f"{inventories}")
