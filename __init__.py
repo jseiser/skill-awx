@@ -100,9 +100,10 @@ class AWXSkill(Skill):
 
     async def _get_environments(self):
         sites = self.config["sites"]
-        print(sites)
+        return_text = f"*AWX Environments*\n"
         for site in sites:
-            print(site)
+            return_text = f"{return_text}```Environment: {site} URL: {site['url']}"
+        return return_text
 
     async def _get_help(self):
         return_text = f"*Help*\n"
@@ -113,6 +114,7 @@ class AWXSkill(Skill):
         return_text = f"{return_text}```awx list running jobs <environment> - Returns information about running jobs for specific environment```\n"
         return_text = f"{return_text}```awx list failed jobs <environment> - Returns information about last 5 failed jobs for specific environment```\n"
         return_text = f"{return_text}```awx list scheduled jobs <environment> - Returns information about next 5 scheduled jobs for specific environment```\n"
+        return return_text
 
     @match_regex(r"^awx list inventory (?P<environment>\w+-\w+|\w+)$")
     async def list_inventory(self, message):
