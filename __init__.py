@@ -98,13 +98,13 @@ class AWXSkill(Skill):
                     return_text = f"*{environment} - No Scheduled Jobs*"
                 return return_text
 
-    async def _list_environments(self):
+    async def _get_environments(self):
         sites = self.config["sites"]
         print(sites)
         for site in sites:
             print(site)
 
-    async def _list_help(self):
+    async def _get_help(self):
         return_text = f"*Help*\n"
         return_text = f"{return_text}```awx help - returns this help screen```\n"
         return_text = f"{return_text}```awx list environments - Returns Environment keywords and urls```\n"
