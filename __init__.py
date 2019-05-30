@@ -10,9 +10,10 @@ class AWXSkill(Skill):
             login=self.config["sites"][environment]["username"],
             password=self.config["sites"][environment]["password"],
         )
+        timeout = aiohttp.ClientTimeout(total=60)
         api_url = f"{self.config['sites'][environment]['url']}/api/v2/inventories/"
 
-        async with aiohttp.ClientSession(auth=auth) as session:
+        async with aiohttp.ClientSession(auth=auth, timeout=timeout) as session:
             async with session.get(api_url) as resp:
                 return_text = "*Inventories*\n"
                 data = await resp.json()
@@ -25,9 +26,10 @@ class AWXSkill(Skill):
             login=self.config["sites"][environment]["username"],
             password=self.config["sites"][environment]["password"],
         )
+        timeout = aiohttp.ClientTimeout(total=60)
         api_url = f"{self.config['sites'][environment]['url']}/api/v2/inventories/{inventory}/update_inventory_sources/"
 
-        async with aiohttp.ClientSession(auth=auth) as session:
+        async with aiohttp.ClientSession(auth=auth, timeout=timeout) as session:
             async with session.post(api_url) as resp:
                 data = await resp.json()
                 print(data)
