@@ -33,11 +33,13 @@ class AWXSkill(Skill):
 
         async with aiohttp.ClientSession(auth=auth, timeout=timeout) as session:
             async with session.post(api_url) as resp:
+                return_text = "*Inventory Update* \n"
                 data = await resp.json()
-                print(data[0])
                 result = data[0]
-                print(result)
-                return result
+                print(resp.status)
+                print(result["status"])
+                return_text = f"```Status: {resp.status} State: {result['status']}```"
+                return return_text
 
     @match_regex(r"^list inventory (?P<environment>\w+-\w+|\w+)")
     async def list_inventory(self, message):
