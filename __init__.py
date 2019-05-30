@@ -14,11 +14,11 @@ class AWXSkill(Skill):
 
         async with aiohttp.ClientSession(auth=auth) as session:
             async with session.get(api_url) as resp:
-                inventories = {}
+                return_text = "*Inventories*\n"
                 data = await resp.json()
                 for i in data["results"]:
-                    inventories.update({i["id"]: i["name"]})
-                return inventories
+                    return_text = f"{return_text}```{i['id']}{i['name']}```\n"
+                return return_text
 
     async def _update_inventory(self, environment, inventory):
         auth = aiohttp.BasicAuth(
@@ -30,6 +30,7 @@ class AWXSkill(Skill):
         async with aiohttp.ClientSession(auth=auth) as session:
             async with session.post(api_url) as resp:
                 data = await resp.json()
+                print(data)
                 return data
 
     @match_regex(r"^list inventory (?P<environment>\w+-\w+|\w+)")
