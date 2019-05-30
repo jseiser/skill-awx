@@ -36,8 +36,6 @@ class AWXSkill(Skill):
                 return_text = "*Inventory Update* \n"
                 data = await resp.json()
                 result = data[0]
-                print(resp.status)
-                print(result["status"])
                 return_text = f"{return_text}```Status: {resp.status} State: {result['status']}```"
                 return return_text
 
@@ -57,7 +55,7 @@ class AWXSkill(Skill):
                 if data["count"] > 0:
                     return_text = "*Running Jobs*\n"
                     for i in data["results"]:
-                        return_text = f"{return_text}```ID: {i['id']} Name: {i['name']} Playbook: i['playbook']```\n"
+                        return_text = f"{return_text}```Date: {i['started']} ID: {i['id']} Name: {i['name']} Playbook: {i['playbook']}```\n"
                 else:
                     return_text = "```No Running Jobs```"
                 return return_text
@@ -76,7 +74,7 @@ class AWXSkill(Skill):
                 if data["count"] > 0:
                     return_text = "*Last 5 Failed Jobs*\n"
                     for i in data["results"]:
-                        return_text = f"{return_text}```ID: {i['id']} Name: {i['name']} Playbook: i['playbook']```\n"
+                        return_text = f"{return_text}```Date: {i['started']} ID: {i['id']} Name: {i['name']} Playbook: {i['playbook']}```\n"
                 else:
                     return_text = "```No Failed Jobs```"
                 return return_text
