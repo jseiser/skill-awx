@@ -18,7 +18,9 @@ class AWXSkill(Skill):
                 return_text = "*Inventories*\n"
                 data = await resp.json()
                 for i in data["results"]:
-                    return_text = f"{return_text}```{i['id']}{i['name']}```\n"
+                    return_text = (
+                        f"{return_text}```ID: {i['id']} Name: {i['name']}```\n"
+                    )
                 return return_text
 
     async def _update_inventory(self, environment, inventory):
@@ -32,8 +34,10 @@ class AWXSkill(Skill):
         async with aiohttp.ClientSession(auth=auth, timeout=timeout) as session:
             async with session.post(api_url) as resp:
                 data = await resp.json()
-                print(data)
-                return data
+                print(data[0])
+                result = data[0]
+                print(result)
+                return result
 
     @match_regex(r"^list inventory (?P<environment>\w+-\w+|\w+)")
     async def list_inventory(self, message):
