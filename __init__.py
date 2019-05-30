@@ -98,14 +98,32 @@ class AWXSkill(Skill):
                     return_text = f"*{environment} - No Scheduled Jobs*"
                 return return_text
 
-    @match_regex(r"^list inventory (?P<environment>\w+-\w+|\w+)")
+    async def _list_environments(self):
+        sites = self.config["sites"]
+        print(sites)
+        for site in sites:
+            print(site)
+
+    async def _list_help(self):
+        return_text = f"*Help*\n"
+        return_text = f"{return_text}```awx help - returns this help screen```\n"
+        return_text = f"{return_text}```awx list environments - Returns Environment keywords and urls```\n"
+        return_text = f"{return_text}```awx list inventory <environment> - Returns name and id for all inventories in specific environment```\n"
+        return_text = f"{return_text}```awx update inventory <environment> <id> - Updates inventory sources for inventory in specific environment```\n"
+        return_text = f"{return_text}```awx list running jobs <environment> - Returns information about running jobs for specific environment```\n"
+        return_text = f"{return_text}```awx list failed jobs <environment> - Returns information about last 5 failed jobs for specific environment```\n"
+        return_text = f"{return_text}```awx list scheduled jobs <environment> - Returns information about next 5 scheduled jobs for specific environment```\n"
+
+    @match_regex(r"^awx list inventory (?P<environment>\w+-\w+|\w+)$")
     async def list_inventory(self, message):
         environment = message.regex.group("environment")
         inventories = await self._get_inventories(environment)
 
         await message.respond(f"{inventories}")
 
-    @match_regex(r"^update inventory (?P<environment>\w+-\w+|\w+) (?P<inventory>\d+)")
+    @match_regex(
+        r"^awx update inventory (?P<environment>\w+-\w+|\w+) (?P<inventory>\d+)$"
+    )
     async def update_inventory(self, message):
         environment = message.regex.group("environment")
         inventory = message.regex.group("inventory")
@@ -113,23 +131,35 @@ class AWXSkill(Skill):
 
         await message.respond(f"{update}")
 
-    @match_regex(r"^list running jobs (?P<environment>\w+-\w+|\w+)")
+    @match_regex(r"^awx list running jobs (?P<environment>\w+-\w+|\w+)$")
     async def list_running_jobs(self, message):
         environment = message.regex.group("environment")
         inventories = await self._get_running_jobs(environment)
 
         await message.respond(f"{inventories}")
 
-    @match_regex(r"^list failed jobs (?P<environment>\w+-\w+|\w+)")
+    @match_regex(r"^awx list failed jobs (?P<environment>\w+-\w+|\w+)$")
     async def list_failed_jobs(self, message):
         environment = message.regex.group("environment")
         inventories = await self._get_failed_jobs(environment)
 
         await message.respond(f"{inventories}")
 
-    @match_regex(r"^list scheduled jobs (?P<environment>\w+-\w+|\w+)")
+    @match_regex(r"^awx list scheduled jobs (?P<environment>\w+-\w+|\w+)$")
     async def list_scheduled_jobs(self, message):
         environment = message.regex.group("environment")
         inventories = await self._get_scheduled_jobs(environment)
+
+        await message.respond(f"{inventories}")
+
+    @match_regex(r"^awx list environments$")
+    async def list_environments(self, message):
+        inventories = await self._get_environments()
+
+        await message.respond(f"{inventories}")
+
+    @match_regex(r"^awx help$")
+    async def list_help(self, message):
+        inventories = await self._get_help()
 
         await message.respond(f"{inventories}")
