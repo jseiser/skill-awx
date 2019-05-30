@@ -79,6 +79,25 @@ class AWXSkill(Skill):
                     return_text = f"*{environment} - No Failed Jobs*"
                 return return_text
 
+    async def _get_scheduled_jobs(self, environment):
+        auth = aiohttp.BasicAuth(
+            login=self.config["sites"][environment]["username"],
+            password=self.config["sites"][environment]["password"],
+        )
+        timeout = aiohttp.ClientTimeout(total=60)
+        api_url = f"{self.config['sites'][environment]['url']}/api/v2/schedules/?enabled=true&order_by=next_run&page_size=5"
+
+        async with aiohttp.ClientSession(auth=auth, timeout=timeout) as session:
+            async with session.get(api_url) as resp:
+                data = await resp.json()
+                if data["count"] > 0:
+                    return_text = f"*{environment} - Next 5 Scheduled Jobs*\n"
+                    for i in data["results"]:
+                        return_text = f"{return_text}```Next Run: {i['next_run']} ID: {i['id']} Name: {i['name']}```\n"
+                else:
+                    return_text = f"*{environment} - No Scheduled Jobs*"
+                return return_text
+
     @match_regex(r"^list inventory (?P<environment>\w+-\w+|\w+)")
     async def list_inventory(self, message):
         environment = message.regex.group("environment")
@@ -105,5 +124,12 @@ class AWXSkill(Skill):
     async def list_failed_jobs(self, message):
         environment = message.regex.group("environment")
         inventories = await self._get_failed_jobs(environment)
+
+        await message.respond(f"{inventories}")
+
+    @match_regex(r"^list scheduled jobs (?P<environment>\w+-\w+|\w+)")
+    async def list_scheduled_jobs(self, message):
+        environment = message.regex.group("environment")
+        inventories = await self._get_scheduled_jobs(environment)
 
         await message.respond(f"{inventories}")
