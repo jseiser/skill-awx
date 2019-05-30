@@ -15,7 +15,7 @@ class AWXSkill(Skill):
 
         async with aiohttp.ClientSession(auth=auth, timeout=timeout) as session:
             async with session.get(api_url) as resp:
-                return_text = "*Inventories*\n"
+                return_text = f"*{environment} - Inventories*\n"
                 data = await resp.json()
                 for i in data["results"]:
                     return_text = (
@@ -33,7 +33,7 @@ class AWXSkill(Skill):
 
         async with aiohttp.ClientSession(auth=auth, timeout=timeout) as session:
             async with session.post(api_url) as resp:
-                return_text = "*Inventory Update* \n"
+                return_text = f"*{environment} - Inventory Update* \n"
                 data = await resp.json()
                 result = data[0]
                 return_text = f"{return_text}```Status: {resp.status} State: {result['status']}```"
@@ -53,11 +53,11 @@ class AWXSkill(Skill):
             async with session.get(api_url) as resp:
                 data = await resp.json()
                 if data["count"] > 0:
-                    return_text = "*Running Jobs*\n"
+                    return_text = f"*{environment} - Running Jobs*\n"
                     for i in data["results"]:
                         return_text = f"{return_text}```Date: {i['started']} ID: {i['id']} Name: {i['name']} Playbook: {i['playbook']}```\n"
                 else:
-                    return_text = "```No Running Jobs```"
+                    return_text = f"*{environment} - No Running Jobs*"
                 return return_text
 
     async def _get_failed_jobs(self, environment):
@@ -72,11 +72,11 @@ class AWXSkill(Skill):
             async with session.get(api_url) as resp:
                 data = await resp.json()
                 if data["count"] > 0:
-                    return_text = "*Last 5 Failed Jobs*\n"
+                    return_text = f"*{environment} - Last 5 Failed Jobs*\n"
                     for i in data["results"]:
                         return_text = f"{return_text}```Date: {i['started']} ID: {i['id']} Name: {i['name']} Playbook: {i['playbook']}```\n"
                 else:
-                    return_text = "```No Failed Jobs```"
+                    return_text = f"*{environment} - No Failed Jobs*"
                 return return_text
 
     @match_regex(r"^list inventory (?P<environment>\w+-\w+|\w+)")
