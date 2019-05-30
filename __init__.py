@@ -102,7 +102,7 @@ class AWXSkill(Skill):
         sites = self.config["sites"]
         return_text = f"*AWX Environments*\n"
         for site in sites:
-            return_text = f"{return_text}```Environment: {site} URL: {site['url']}"
+            return_text = f"{return_text}```Environment: {site} URL: {self.config['sites'][site]['url']}"
         return return_text
 
     async def _get_help(self):
