@@ -151,6 +151,13 @@ class AWXSkill(Skill):
 
         await message.respond(f"{inventories}")
 
+    @match_regex(r"^awx (?P<deployment>\w+-\w+|\w+) list failed jobs$")
+    async def list_failed_jobs_num(self, message):
+        deployment = message.regex.group("deployment")
+        inventories = await self._get_failed_jobs(deployment)
+
+        await message.respond(f"{inventories}")
+
     @match_regex(r"^awx (?P<deployment>\w+-\w+|\w+) list scheduled jobs$")
     async def list_scheduled_jobs(self, message):
         deployment = message.regex.group("deployment")
