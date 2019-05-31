@@ -60,13 +60,13 @@ class AWXSkill(Skill):
                     return_text = f"*{deployment} - No Running Jobs*"
                 return return_text
 
-    async def _get_failed_jobs(self, deployment):
+    async def _get_failed_jobs(self, deployment, num=5):
         auth = aiohttp.BasicAuth(
             login=self.config["sites"][deployment]["username"],
             password=self.config["sites"][deployment]["password"],
         )
         timeout = aiohttp.ClientTimeout(total=60)
-        api_url = f"{self.config['sites'][deployment]['url']}/api/v2/jobs/?status=failed&order_by=-started&page_size=5"
+        api_url = f"{self.config['sites'][deployment]['url']}/api/v2/jobs/?status=failed&order_by=-started&page_size={num}"
 
         async with aiohttp.ClientSession(auth=auth, timeout=timeout) as session:
             async with session.get(api_url) as resp:
@@ -79,13 +79,13 @@ class AWXSkill(Skill):
                     return_text = f"*{deployment} - No Failed Jobs*"
                 return return_text
 
-    async def _get_scheduled_jobs(self, deployment):
+    async def _get_scheduled_jobs(self, deployment, num=5):
         auth = aiohttp.BasicAuth(
             login=self.config["sites"][deployment]["username"],
             password=self.config["sites"][deployment]["password"],
         )
         timeout = aiohttp.ClientTimeout(total=60)
-        api_url = f"{self.config['sites'][deployment]['url']}/api/v2/schedules/?enabled=true&order_by=next_run&page_size=5"
+        api_url = f"{self.config['sites'][deployment]['url']}/api/v2/schedules/?enabled=true&order_by=next_run&page_size={num}"
 
         async with aiohttp.ClientSession(auth=auth, timeout=timeout) as session:
             async with session.get(api_url) as resp:
@@ -151,10 +151,11 @@ class AWXSkill(Skill):
 
         await message.respond(f"{inventories}")
 
-    @match_regex(r"^awx (?P<deployment>\w+-\w+|\w+) list failed jobs$")
+    @match_regex(r"^awx (?P<deployment>\w+-\w+|\w+) list failed jobs \d+$")
     async def list_failed_jobs_num(self, message):
         deployment = message.regex.group("deployment")
-        inventories = await self._get_failed_jobs(deployment)
+        num = message.regex.group("num")
+        inventories = await self._get_failed_jobs(deployment, num)
 
         await message.respond(f"{inventories}")
 
@@ -162,6 +163,14 @@ class AWXSkill(Skill):
     async def list_scheduled_jobs(self, message):
         deployment = message.regex.group("deployment")
         inventories = await self._get_scheduled_jobs(deployment)
+
+        await message.respond(f"{inventories}")
+
+    @match_regex(r"^awx (?P<deployment>\w+-\w+|\w+) list scheduled jobs \d+$")
+    async def list_scheduled_jobs_num(self, message):
+        deployment = message.regex.group("deployment")
+        num = message.regex.group("num")
+        inventories = await self._get_scheduled_jobs(deployment, num)
 
         await message.respond(f"{inventories}")
 
