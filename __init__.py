@@ -109,14 +109,18 @@ class AWXSkill(Skill):
         return_text = f"*Help*\n"
         return_text = f"{return_text}```awx help - returns this help screen```\n"
         return_text = f"{return_text}```awx list deployments - Returns Deployment keywords and urls```\n"
-        return_text = f"{return_text}```awx list inventory <deployment> - Returns name and id for all inventories in specific deployment```\n"
-        return_text = f"{return_text}```awx update inventory <deployment> <id> - Updates inventory sources for inventory in specific deployment```\n"
-        return_text = f"{return_text}```awx list running jobs <deployment> - Returns information about running jobs for specific deployment```\n"
-        return_text = f"{return_text}```awx list failed jobs <deployment> - Returns information about last 5 failed jobs for specific deployment```\n"
-        return_text = f"{return_text}```awx list scheduled jobs <deployment> - Returns information about next 5 scheduled jobs for specific deployment```\n"
+        return_text = f"{return_text}```awx <deployment> list inventory  - Returns name and id for all inventories in specific deployment```\n"
+        return_text = f"{return_text}```awx <deployment> update inventory  <id> - Updates inventory sources for inventory in specific deployment```\n"
+        return_text = f"{return_text}```awx <deployment> list running jobs  - Returns information about running jobs for specific deployment```\n"
+        return_text = f"{return_text}```awx <deployment> list failed jobs  - Returns information about last 5 failed jobs for specific deployment```\n"
+        return_text = f"{return_text}```awx <deployment> list failed jobs  <#> - Returns information about last # failed jobs for specific deployment```\n"
+        return_text = f"{return_text}```awx <deployment> list scheduled jobs  - Returns information about next 5 scheduled jobs for specific deployment```\n"
+        return_text = f"{return_text}```awx <deployment> list scheduled jobs <#> - Returns information about next # scheduled jobs for specific deployment```\n"
         return return_text
 
-    @match_regex(r"^awx list inventory (?P<deployment>\w+-\w+|\w+)$")
+    # being Matching Functions
+
+    @match_regex(r"^awx (?P<deployment>\w+-\w+|\w+) list inventory$")
     async def list_inventory(self, message):
         deployment = message.regex.group("deployment")
         inventories = await self._get_inventories(deployment)
@@ -124,7 +128,7 @@ class AWXSkill(Skill):
         await message.respond(f"{inventories}")
 
     @match_regex(
-        r"^awx update inventory (?P<deployment>\w+-\w+|\w+) (?P<inventory>\d+)$"
+        r"^awx (?P<deployment>\w+-\w+|\w+) update inventory (?P<inventory>\d+)$"
     )
     async def update_inventory(self, message):
         deployment = message.regex.group("deployment")
@@ -133,21 +137,21 @@ class AWXSkill(Skill):
 
         await message.respond(f"{update}")
 
-    @match_regex(r"^awx list running jobs (?P<deployment>\w+-\w+|\w+)$")
+    @match_regex(r"^awx (?P<deployment>\w+-\w+|\w+) list running jobs$")
     async def list_running_jobs(self, message):
         deployment = message.regex.group("deployment")
         inventories = await self._get_running_jobs(deployment)
 
         await message.respond(f"{inventories}")
 
-    @match_regex(r"^awx list failed jobs (?P<deployment>\w+-\w+|\w+)$")
+    @match_regex(r"^awx (?P<deployment>\w+-\w+|\w+) list failed jobs$")
     async def list_failed_jobs(self, message):
         deployment = message.regex.group("deployment")
         inventories = await self._get_failed_jobs(deployment)
 
         await message.respond(f"{inventories}")
 
-    @match_regex(r"^awx list scheduled jobs (?P<deployment>\w+-\w+|\w+)$")
+    @match_regex(r"^awx (?P<deployment>\w+-\w+|\w+) list scheduled jobs$")
     async def list_scheduled_jobs(self, message):
         deployment = message.regex.group("deployment")
         inventories = await self._get_scheduled_jobs(deployment)
