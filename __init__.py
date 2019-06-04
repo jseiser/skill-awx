@@ -2,6 +2,7 @@ from opsdroid.skill import Skill
 from opsdroid.matchers import match_regex
 
 import aiohttp
+import datetime
 
 
 class AWXSkill(Skill):
@@ -60,19 +61,24 @@ class AWXSkill(Skill):
                     return_text = f"*{deployment} - No Running Jobs*"
                 return return_text
 
-    async def _get_failed_jobs(self, deployment, num=5):
+    async def _get_failed_jobs(self, deployment, num=5, yesterday=None):
         auth = aiohttp.BasicAuth(
             login=self.config["sites"][deployment]["username"],
             password=self.config["sites"][deployment]["password"],
         )
         timeout = aiohttp.ClientTimeout(total=60)
-        api_url = f"{self.config['sites'][deployment]['url']}/api/v2/jobs/?status=failed&order_by=-started&page_size={num}"
+        if yesterday:
+            yesterday = datetime.datetime.now() - datetime.timedelta(days=1)
+            start_time = yesterday.isoformat()
+            api_url = f"{self.config['sites'][deployment]['url']}/api/v2/jobs/?status=failed&order_by=-started&started__gt={start_time}&page_size=100"
+        else:
+            api_url = f"{self.config['sites'][deployment]['url']}/api/v2/jobs/?status=failed&order_by=-started&page_size={num}"
 
         async with aiohttp.ClientSession(auth=auth, timeout=timeout) as session:
             async with session.get(api_url) as resp:
                 data = await resp.json()
                 if data["count"] > 0:
-                    return_text = f"*{deployment} - Last 5 Failed Jobs*\n"
+                    return_text = f"*{deployment} - Failed Jobs*\n"
                     for i in data["results"]:
                         return_text = f"{return_text}```Date: {i['started']} ID: {i['id']} Name: {i['name']} Playbook: {i['playbook']}```\n"
                 else:
@@ -113,6 +119,7 @@ class AWXSkill(Skill):
         return_text = f"{return_text}```awx <deployment> update inventory  <id> - Updates inventory sources for inventory in specific deployment```\n"
         return_text = f"{return_text}```awx <deployment> list running jobs  - Returns information about running jobs for specific deployment```\n"
         return_text = f"{return_text}```awx <deployment> list failed jobs  - Returns information about last 5 failed jobs for specific deployment```\n"
+        return_text = f"{return_text}```awx <deployment> list failed jobs yesterday  - Returns information about last 24 hours of failed jobs for specific deployment```\n"
         return_text = f"{return_text}```awx <deployment> list failed jobs  <#> - Returns information about last # failed jobs for specific deployment```\n"
         return_text = f"{return_text}```awx <deployment> list scheduled jobs  - Returns information about next 5 scheduled jobs for specific deployment```\n"
         return_text = f"{return_text}```awx <deployment> list scheduled jobs <#> - Returns information about next # scheduled jobs for specific deployment```\n"
@@ -148,6 +155,13 @@ class AWXSkill(Skill):
     async def list_failed_jobs(self, message):
         deployment = message.regex.group("deployment")
         inventories = await self._get_failed_jobs(deployment)
+
+        await message.respond(f"{inventories}")
+
+    @match_regex(r"^awx (?P<deployment>\w+-\w+|\w+) list failed jobs yesterday$")
+    async def list_failed_jobs_yesterday(self, message):
+        deployment = message.regex.group("deployment")
+        inventories = await self._get_failed_jobs(deployment, yesterday=True)
 
         await message.respond(f"{inventories}")
 
