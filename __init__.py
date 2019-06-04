@@ -104,6 +104,27 @@ class AWXSkill(Skill):
                     return_text = f"*{deployment} - No Scheduled Jobs*"
                 return return_text
 
+    async def _get_scheduled_jobs_past(self, deployment):
+        auth = aiohttp.BasicAuth(
+            login=self.config["sites"][deployment]["username"],
+            password=self.config["sites"][deployment]["password"],
+        )
+        timeout = aiohttp.ClientTimeout(total=60)
+        today = datetime.datetime.now()
+        next_run = today.isoformat()
+        api_url = f"{self.config['sites'][deployment]['url']}/api/v2/schedules/?enabled=true&order_by=next_run&next_run__lt={next_run}&page_size=20"
+
+        async with aiohttp.ClientSession(auth=auth, timeout=timeout) as session:
+            async with session.get(api_url) as resp:
+                data = await resp.json()
+                if data["count"] > 0:
+                    return_text = f"*{deployment} - Past Scheduled Jobs*\n"
+                    for i in data["results"]:
+                        return_text = f"{return_text}```Next Run: {i['next_run']} ID: {i['id']} Name: {i['name']}```\n"
+                else:
+                    return_text = f"*{deployment} - No Scheduled Jobs*"
+                return return_text
+
     async def _get_deployments(self):
         sites = self.config["sites"]
         return_text = f"*AWX Deployments*\n"
@@ -123,6 +144,7 @@ class AWXSkill(Skill):
         return_text = f"{return_text}```awx <deployment> list failed jobs  num:<#> - Returns information about last # failed jobs for specific deployment```\n"
         return_text = f"{return_text}```awx <deployment> list scheduled jobs  - Returns information about next 5 scheduled jobs for specific deployment```\n"
         return_text = f"{return_text}```awx <deployment> list scheduled jobs num:<#> - Returns information about next # scheduled jobs for specific deployment```\n"
+        return_text = f"{return_text}```awx <deployment> list scheduled jobs past - Returns information about  scheduled jobs with next_run in the past```\n"
         return return_text
 
     # being Matching Functions
@@ -189,6 +211,13 @@ class AWXSkill(Skill):
         deployment = message.regex.group("deployment")
         num = message.regex.group("num")
         inventories = await self._get_scheduled_jobs(deployment, num)
+
+        await message.respond(f"{inventories}")
+
+    @match_regex(r"^awx (?P<deployment>\w+-\w+|\w+) list scheduled jobs past$")
+    async def list_scheduled_jobs_past(self, message):
+        deployment = message.regex.group("deployment")
+        inventories = await self._get_scheduled_jobs_past(deployment)
 
         await message.respond(f"{inventories}")
 
