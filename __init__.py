@@ -120,9 +120,9 @@ class AWXSkill(Skill):
         return_text = f"{return_text}```awx <deployment> list running jobs  - Returns information about running jobs for specific deployment```\n"
         return_text = f"{return_text}```awx <deployment> list failed jobs  - Returns information about last 5 failed jobs for specific deployment```\n"
         return_text = f"{return_text}```awx <deployment> list failed jobs yesterday  - Returns information about last 24 hours of failed jobs for specific deployment```\n"
-        return_text = f"{return_text}```awx <deployment> list failed jobs  <#> - Returns information about last # failed jobs for specific deployment```\n"
+        return_text = f"{return_text}```awx <deployment> list failed jobs  num:<#> - Returns information about last # failed jobs for specific deployment```\n"
         return_text = f"{return_text}```awx <deployment> list scheduled jobs  - Returns information about next 5 scheduled jobs for specific deployment```\n"
-        return_text = f"{return_text}```awx <deployment> list scheduled jobs <#> - Returns information about next # scheduled jobs for specific deployment```\n"
+        return_text = f"{return_text}```awx <deployment> list scheduled jobs num:<#> - Returns information about next # scheduled jobs for specific deployment```\n"
         return return_text
 
     # being Matching Functions
@@ -165,7 +165,9 @@ class AWXSkill(Skill):
 
         await message.respond(f"{inventories}")
 
-    @match_regex(r"^awx (?P<deployment>\w+-\w+|\w+) list failed jobs (?P<num>\d+)$")
+    @match_regex(
+        r"^awx (?P<deployment>\w+-\w+|\w+) list failed jobs num: (?P<num>\d+)$"
+    )
     async def list_failed_jobs_num(self, message):
         deployment = message.regex.group("deployment")
         num = message.regex.group("num")
@@ -180,7 +182,9 @@ class AWXSkill(Skill):
 
         await message.respond(f"{inventories}")
 
-    @match_regex(r"^awx (?P<deployment>\w+-\w+|\w+) list scheduled jobs (?P<num>\d+)$")
+    @match_regex(
+        r"^awx (?P<deployment>\w+-\w+|\w+) list scheduled jobs num: (?P<num>\d+)$"
+    )
     async def list_scheduled_jobs_num(self, message):
         deployment = message.regex.group("deployment")
         num = message.regex.group("num")
