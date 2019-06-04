@@ -40,6 +40,25 @@ class AWXSkill(Skill):
                 return_text = f"{return_text}```Status: {resp.status} State: {result['status']}```"
                 return return_text
 
+    async def _get_projects(self, deployment):
+        auth = aiohttp.BasicAuth(
+            login=self.config["sites"][deployment]["username"],
+            password=self.config["sites"][deployment]["password"],
+        )
+        timeout = aiohttp.ClientTimeout(total=60)
+        api_url = f"{self.config['sites'][deployment]['url']}/api/v2/projects/"
+
+        async with aiohttp.ClientSession(auth=auth, timeout=timeout) as session:
+            async with session.get(api_url) as resp:
+                data = await resp.json()
+                if data["count"] > 0:
+                    return_text = f"*{deployment} - Projects*\n"
+                    for i in data["results"]:
+                        return_text = f"{return_text}```ID: {i['id']}\n Name: {i['name']}\n scm_url: {i['scm_url']} scm_branch: {i['scm_branch']}```\n"
+                else:
+                    return_text = f"*{deployment} - No Projects*"
+                return return_text
+
     async def _get_running_jobs(self, deployment):
         auth = aiohttp.BasicAuth(
             login=self.config["sites"][deployment]["username"],
@@ -145,6 +164,8 @@ class AWXSkill(Skill):
         return_text = f"{return_text}```awx <deployment> list scheduled jobs  - Returns information about next 5 scheduled jobs for specific deployment```\n"
         return_text = f"{return_text}```awx <deployment> list scheduled jobs num:<#> - Returns information about next # scheduled jobs for specific deployment```\n"
         return_text = f"{return_text}```awx <deployment> list scheduled jobs past - Returns information about  scheduled jobs with next_run in the past```\n"
+        return_text = f"{return_text}```awx <deployment> list projects - Returns information about project for specific deployment```\n"
+        return_text = f"{return_text}```awx <deployment> update project <id> - Updated a project by id```\n"
         return return_text
 
     # being Matching Functions
@@ -230,5 +251,12 @@ class AWXSkill(Skill):
     @match_regex(r"^awx help$")
     async def list_help(self, message):
         inventories = await self._get_help()
+
+        await message.respond(f"{inventories}")
+
+    @match_regex(r"^awx (?P<deployment>\w+-\w+|\w+) list projects$")
+    async def list_projects(self, message):
+        deployment = message.regex.group("deployment")
+        inventories = await self._get_projects(deployment)
 
         await message.respond(f"{inventories}")
