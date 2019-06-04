@@ -40,6 +40,24 @@ class AWXSkill(Skill):
                 return_text = f"{return_text}```Status: {resp.status} State: {result['status']}```"
                 return return_text
 
+    async def _update_project(self, deployment, id):
+        auth = aiohttp.BasicAuth(
+            login=self.config["sites"][deployment]["username"],
+            password=self.config["sites"][deployment]["password"],
+        )
+        timeout = aiohttp.ClientTimeout(total=60)
+        api_url = (
+            f"{self.config['sites'][deployment]['url']}/api/v2/projects/{id}/update/"
+        )
+
+        async with aiohttp.ClientSession(auth=auth, timeout=timeout) as session:
+            async with session.post(api_url) as resp:
+                return_text = f"*{deployment} - Project Update* \n"
+                data = await resp.json()
+                result = data[0]
+                return_text = f"{return_text}```Status: {resp.status} State: {result['status']}```"
+                return return_text
+
     async def _get_projects(self, deployment):
         auth = aiohttp.BasicAuth(
             login=self.config["sites"][deployment]["username"],
@@ -54,7 +72,7 @@ class AWXSkill(Skill):
                 if data["count"] > 0:
                     return_text = f"*{deployment} - Projects*\n"
                     for i in data["results"]:
-                        return_text = f"{return_text}```ID: {i['id']}\n Name: {i['name']}\n scm_url: {i['scm_url']} scm_branch: {i['scm_branch']}```\n"
+                        return_text = f"{return_text}```ID: {i['id']}\nName: {i['name']}\nscm_url: {i['scm_url']}\nscm_branch: {i['scm_branch']}```\n"
                 else:
                     return_text = f"*{deployment} - No Projects*"
                 return return_text
@@ -260,3 +278,11 @@ class AWXSkill(Skill):
         inventories = await self._get_projects(deployment)
 
         await message.respond(f"{inventories}")
+
+    @match_regex(r"^awx (?P<deployment>\w+-\w+|\w+) update project (?P<id>\d+)$")
+    async def update_project(self, message):
+        deployment = message.regex.group("deployment")
+        id = message.regex.group("id")
+        update = await self._update_project(deployment, id)
+
+        await message.respond(f"{update}")
