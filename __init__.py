@@ -54,7 +54,7 @@ class AWXSkill(Skill):
             async with session.post(api_url) as resp:
                 return_text = f"*{deployment} - Project Update* \n"
                 data = await resp.json()
-                result = data[0]
+                result = data
                 return_text = f"{return_text}```Status: {resp.status} State: {result['status']}```"
                 return return_text
 
