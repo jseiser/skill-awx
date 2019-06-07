@@ -1,0 +1,14 @@
+repos:
+-   repo: https://github.com/python/black
+    rev: master
+    hooks:
+    - id: black
+      language_version: python3.7
+-   repo: https://gitlab.com/pycqa/flake8
+    rev: master
+    hooks:
+    -   id: flake8
+-   repo: https://github.com/PyCQA/bandit
+    rev: master
+    hooks:
+    - id: bandit

@@ -1,0 +1,22 @@
+dist: xenial
+language: python
+cache: pip
+
+install:
+  - pip install -r requirements-dev.yml
+script:
+- $TEST_CMD
+matrix:
+  include:
+    - name: "black"
+      python: 3.7
+      env:
+        - TEST_CMD="black --check --verbose __init__.py"
+    - name: "flake8"
+      python: 3.7
+      env:
+        - TEST_CMD="flake8 -v __init__.py"
+    - name: "flake8"
+      python: 3.7
+      env:
+        - TEST_CMD="bandit -v __init__.py"
