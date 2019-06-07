@@ -3,7 +3,7 @@ language: python
 cache: pip
 
 install:
-  - pip install -r requirements_dev.txt
+  - pip install -r requirements-dev.yml
 script:
 - $TEST_CMD
 matrix:
