@@ -32,7 +32,7 @@ class AWXSkill(Skill):
 
     async def _update_inventory(self, deployment, inventory):
         api_url = f"{self.config['sites'][deployment]['url']}/api/v2/inventories/{inventory}/update_inventory_sources/"
-        data = await self._rest_call(deployment, api_url, post)
+        data = await self._rest_call(deployment, api_url, "post")
         return_text = f"*{deployment} - Inventory Update* \n"
         result = data[0]
         return_text = f"{return_text}```State: {result['status']}```"
@@ -44,7 +44,7 @@ class AWXSkill(Skill):
         )
 
         return_text = f"*{deployment} - Project Update* \n"
-        result = await self._rest_call(deployment, api_url, post)
+        result = await self._rest_call(deployment, api_url, "post")
         return_text = f"{return_text}```State: {result['status']}```"
         return return_text
 
